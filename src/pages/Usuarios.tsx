@@ -15,7 +15,7 @@ import {
 import { DialogFooter } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { usersService, segmentsService, linesService, type User as ApiUser, type Segment, type Line } from "@/services/api";
+import { usersService, segmentsService, linesService, controlPanelService, type User as ApiUser, type Segment, type Line } from "@/services/api";
 import { Loader2, Upload } from "lucide-react";
 
 interface User {
@@ -78,6 +78,7 @@ export default function Usuarios() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [sharedLineMode, setSharedLineMode] = useState<boolean>(false);
   const [formData, setFormData] = useState({ 
     name: '', 
     email: '', 
@@ -97,11 +98,14 @@ export default function Usuarios() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [usersData, segmentsData, linesData] = await Promise.all([
+      const [usersData, segmentsData, linesData, controlPanelSettings] = await Promise.all([
         usersService.list(),
         segmentsService.list(),
-        linesService.list()
+        linesService.list(),
+        controlPanelService.get().catch(() => ({ sharedLineMode: false })) // Fallback se falhar
       ]);
+      
+      setSharedLineMode(controlPanelSettings.sharedLineMode || false);
 
       setUsers(usersData.map((u: ApiUser) => {
         const userLine = linesData.find(l => l.id === u.line);
@@ -381,6 +385,10 @@ export default function Usuarios() {
           <SelectContent>
             {lines
               .filter((line) => {
+                // No modo compartilhado, mostrar todas as linhas (permitir múltiplos usuários na mesma linha)
+                if (sharedLineMode) {
+                  return true;
+                }
                 // Filtrar apenas linhas sem vínculo (que não estão atribuídas a nenhum usuário)
                 const isLineInUse = users.some((user) => user.line === line.id);
                 return !isLineInUse;
@@ -392,7 +400,11 @@ export default function Usuarios() {
             ))}
           </SelectContent>
         </Select>
-        <p className="text-xs text-muted-foreground">Define qual linha será usada para envio de mensagens (apenas linhas sem vínculo)</p>
+        <p className="text-xs text-muted-foreground">
+          {sharedLineMode 
+            ? "Define qual linha será usada para envio de mensagens (modo compartilhado ativo - múltiplos usuários podem usar a mesma linha)"
+            : "Define qual linha será usada para envio de mensagens (apenas linhas sem vínculo)"}
+        </p>
       </div>
       {formData.role === 'operador' && (
         <div className="flex items-center justify-between rounded-lg border p-4">
