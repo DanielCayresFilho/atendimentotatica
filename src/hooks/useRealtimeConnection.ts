@@ -91,8 +91,16 @@ export function useRealtimeSubscription<T = any>(
   dependencies: any[] = []
 ) {
   useEffect(() => {
-    const unsubscribe = realtimeSocket.subscribe(eventType, handler);
-    return unsubscribe;
+    console.log(`[useRealtimeSubscription] Subscribing to event: ${eventType}`);
+    const wrappedHandler = (data: T) => {
+      console.log(`[useRealtimeSubscription] Event received: ${eventType}`, data);
+      handler(data);
+    };
+    const unsubscribe = realtimeSocket.subscribe(eventType, wrappedHandler);
+    return () => {
+      console.log(`[useRealtimeSubscription] Unsubscribing from event: ${eventType}`);
+      unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventType, ...dependencies]);
 }

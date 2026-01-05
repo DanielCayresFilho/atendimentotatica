@@ -124,18 +124,22 @@ class RealtimeWebSocket {
 
     this.registeredEvents.add(eventType);
     this.socket.on(eventType, (data) => {
-      console.log('[Socket.IO] Message received:', eventType, data);
+      console.log(`[Socket.IO] ✅ Message received: ${eventType}`, data);
       const handlerSet = this.handlers.get(eventType);
       if (handlerSet) {
+        console.log(`[Socket.IO] Dispatching to ${handlerSet.size} handler(s) for event: ${eventType}`);
         handlerSet.forEach(handler => handler(data));
+      } else {
+        console.warn(`[Socket.IO] No handlers found for event: ${eventType}`);
       }
-      
+
       // Também disparar para handlers 'all'
       const allHandlers = this.handlers.get('all');
       if (allHandlers) {
         allHandlers.forEach(handler => handler({ type: eventType, ...data }));
       }
     });
+    console.log(`[Socket.IO] Registered listener for event: ${eventType}`);
   }
 
   disconnect() {
