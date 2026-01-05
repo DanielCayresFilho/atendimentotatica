@@ -1101,7 +1101,7 @@ export default function Atendimento() {
     <MainLayout>
       <div className="h-[calc(100vh-6rem)] flex gap-4">
         {/* Conversations List */}
-        <GlassCard className="w-80 flex flex-col" padding="none">
+        <GlassCard className="w-80 flex flex-col max-h-[calc(100vh-8rem)]" padding="none">
           {/* Header */}
           <div className="p-4 border-b border-border/50">
             <div className="flex items-center justify-between mb-3">
@@ -1618,15 +1618,21 @@ export default function Atendimento() {
               {/* Messages */}
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
-                  {selectedConversation.messages.map((msg) => (
+                  {selectedConversation.messages.map((msg) => {
+                    // Determinar se a mensagem é do operador logado
+                    const isMyMessage = msg.sender === 'operator' && msg.userId === user?.id;
+                    const isOtherOperator = msg.sender === 'operator' && msg.userId !== user?.id;
+
+                    return (
                     <div
                       key={msg.id}
                       className={cn(
                         "flex gap-2",
-                        msg.sender === 'contact' ? "justify-start" : "justify-end"
+                        msg.sender === 'contact' ? "justify-start" :
+                        isMyMessage ? "justify-end" : "justify-start" // Minha mensagem: direita, outros: esquerda
                       )}
                     >
-                      {msg.sender === 'contact' && (
+                      {(msg.sender === 'contact' || isOtherOperator) && (
                         <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                           <span className="text-xs font-medium">
                             {selectedConversation.contactName.split(' ').map(n => n[0]).join('').slice(0, 2)}
@@ -1638,13 +1644,15 @@ export default function Atendimento() {
                           "max-w-[70%] rounded-2xl px-4 py-2",
                           msg.sender === 'contact'
                             ? "bg-card border border-border"
-                            : "bg-primary text-primary-foreground"
+                            : isMyMessage
+                              ? "bg-primary text-primary-foreground" // Minhas mensagens: azul
+                              : "bg-muted text-foreground" // Mensagens de outros operadores: cinza
                         )}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {/* Nome do usuário (modo compartilhado) ou participante (grupo) - mais visível */}
-                        {msg.sender === 'operator' && sharedLineMode && msg.userName && (
-                          <p className="text-sm font-bold mb-1.5 text-primary-foreground/95">
+                        {/* Nome do usuário (modo compartilhado) - mostrar apenas para outros operadores */}
+                        {isOtherOperator && sharedLineMode && msg.userName && (
+                          <p className="text-sm font-bold mb-1.5 text-foreground/90">
                             {msg.userName}
                           </p>
                         )}
@@ -1713,13 +1721,14 @@ export default function Atendimento() {
                         <div className="flex items-center gap-2 mt-1">
                           <p className={cn(
                             "text-xs",
-                            msg.sender === 'contact' ? "text-muted-foreground" : "text-primary-foreground/70"
+                            msg.sender === 'contact' ? "text-muted-foreground" :
+                            isMyMessage ? "text-primary-foreground/70" : "text-muted-foreground"
                           )}>
                             {formatTime(msg.datetime)}
                           </p>
                         </div>
                       </div>
-                      {msg.sender === 'operator' && (
+                      {isMyMessage && (
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-cyan flex items-center justify-center flex-shrink-0">
                           {sharedLineMode && msg.userName ? (
                             <span className="text-xs font-medium text-primary-foreground" title={msg.userName}>
@@ -1731,7 +1740,8 @@ export default function Atendimento() {
                         </div>
                       )}
                     </div>
-                  ))}
+                    );
+                  })}
                   <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
