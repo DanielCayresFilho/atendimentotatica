@@ -1066,6 +1066,37 @@ export default function Atendimento() {
     }
   };
 
+  /**
+   * Processa menções no texto da mensagem
+   * Substitui padrões como @551199999999 por versões mais amigáveis
+   */
+  const processMentions = (text: string): string => {
+    if (!text) return text;
+
+    // Padrão para detectar menções: @seguido de números (mínimo 10 dígitos)
+    // Exemplo: @551199999999, @5511999999999, etc.
+    const mentionPattern = /@(\d{10,15})/g;
+
+    return text.replace(mentionPattern, (match, phoneNumber) => {
+      // Formatar o número de telefone de forma mais legível
+      // Exemplo: @551199999999 -> @+55 (11) 9999-9999
+
+      // Se o número tem código de país (começa com 55 para Brasil)
+      if (phoneNumber.startsWith('55') && phoneNumber.length >= 12) {
+        const countryCode = phoneNumber.substring(0, 2);
+        const ddd = phoneNumber.substring(2, 4);
+        const firstPart = phoneNumber.substring(4, phoneNumber.length - 4);
+        const lastPart = phoneNumber.substring(phoneNumber.length - 4);
+
+        return `@+${countryCode} (${ddd}) ${firstPart}-${lastPart}`;
+      }
+
+      // Caso seja um número sem código de país ou formato diferente
+      // Apenas adiciona o + e mantém o número
+      return `@+${phoneNumber}`;
+    });
+  };
+
   return (
     <MainLayout>
       <div className="h-[calc(100vh-6rem)] flex gap-4">
@@ -1434,7 +1465,7 @@ export default function Atendimento() {
                                 const conversationText = messages.map(msg => {
                                   const date = format(new Date(msg.datetime), 'dd/MM/yyyy HH:mm:ss');
                                   const sender = msg.sender === 'operator' ? 'Operador' : 'Cliente';
-                                  return `[${date}] ${sender}: ${msg.message || '(mídia)'}`;
+                                  return `[${date}] ${sender}: ${processMentions(msg.message) || '(mídia)'}`;
                                 }).join('\n\n');
                                 
                                 const fullText = `Conversa com ${selectedConversation.contactName} (${selectedConversation.contactPhone})\n\n${conversationText}`;
@@ -1637,7 +1668,7 @@ export default function Atendimento() {
                               }}
                             />
                             {msg.message && !msg.message.includes('recebida') && (
-                              <p className="text-sm mt-2">{msg.message}</p>
+                              <p className="text-sm mt-2">{processMentions(msg.message)}</p>
                             )}
                           </div>
                         ) : msg.messageType === 'audio' && msg.mediaUrl ? (
@@ -1661,7 +1692,7 @@ export default function Atendimento() {
                               Seu navegador não suporta vídeo.
                             </video>
                             {msg.message && !msg.message.includes('recebido') && (
-                              <p className="text-sm mt-2">{msg.message}</p>
+                              <p className="text-sm mt-2">{processMentions(msg.message)}</p>
                             )}
                           </div>
                         ) : msg.messageType === 'document' && msg.mediaUrl ? (
@@ -1677,7 +1708,7 @@ export default function Atendimento() {
                             </a>
                           </div>
                         ) : (
-                          <p className="text-sm">{msg.message}</p>
+                          <p className="text-sm">{processMentions(msg.message)}</p>
                         )}
                         <div className="flex items-center gap-2 mt-1">
                           <p className={cn(
