@@ -124,9 +124,19 @@ export default function Atendimento() {
         const existing = prev.find(c => c.contactPhone === newMsg.contactPhone);
         
         if (existing) {
+          // Verificar se a mensagem já existe para evitar duplicatas
+          const messageExists = existing.messages.some(m => 
+            m.id === newMsg.id || 
+            (m.datetime === newMsg.datetime && m.message === newMsg.message && m.sender === newMsg.sender)
+          );
+          
+          if (messageExists) {
+            return prev; // Não atualizar se já existe
+          }
+          
           // Add message to existing conversation
           const updated = prev.map(conv => {
-            if (conv.contactPhone === newMsg.contactPhone) {
+            if (conv.contactPhone === groupKey) {
               return {
                 ...conv,
                 messages: [...conv.messages, newMsg].sort((a, b) => 
@@ -135,6 +145,7 @@ export default function Atendimento() {
                 lastMessage: newMsg.message,
                 lastMessageTime: newMsg.datetime,
                 isFromContact: newMsg.sender === 'contact',
+                unread: newMsg.sender === 'contact' && selectedPhoneRef.current !== newMsg.contactPhone ? true : conv.unread,
               };
             }
             return conv;
@@ -144,9 +155,14 @@ export default function Atendimento() {
           );
         } else {
           // Create new conversation group
+          // Para grupos, usar groupName como contactName; para contatos, usar contactName normal
+          const displayName = newMsg.isGroup && newMsg.groupName 
+            ? newMsg.groupName 
+            : newMsg.contactName;
+          
           const newGroup: ConversationGroup = {
-            contactPhone: newMsg.contactPhone,
-            contactName: newMsg.contactName,
+            contactPhone: groupKey, // Usar groupKey (groupId ou contactPhone)
+            contactName: displayName,
             lastMessage: newMsg.message,
             lastMessageTime: newMsg.datetime,
             isFromContact: newMsg.sender === 'contact',
@@ -161,6 +177,16 @@ export default function Atendimento() {
       if (selectedPhoneRef.current === newMsg.contactPhone) {
         setSelectedConversation(prev => {
           if (!prev) return null;
+          // Verificar se a mensagem já existe para evitar duplicatas
+          const messageExists = prev.messages.some(m => 
+            m.id === newMsg.id || 
+            (m.datetime === newMsg.datetime && m.message === newMsg.message && m.sender === newMsg.sender)
+          );
+          
+          if (messageExists) {
+            return prev; // Não atualizar se já existe
+          }
+          
           return {
             ...prev,
             messages: [...prev.messages, newMsg].sort((a, b) => 
@@ -171,6 +197,13 @@ export default function Atendimento() {
             isFromContact: newMsg.sender === 'contact',
           };
         });
+        
+        // Scroll suave apenas se for mensagem do contato (não do operador)
+        if (newMsg.sender === 'contact') {
+          setTimeout(() => {
+            scrollToBottom();
+          }, 100);
+        }
       }
     }
   }, [playMessageSound]); // Removido selectedConversation da dependência
@@ -234,6 +267,16 @@ export default function Atendimento() {
       if (selectedPhoneRef.current === newMsg.contactPhone) {
         setSelectedConversation(prev => {
           if (!prev) return null;
+          // Verificar se a mensagem já existe para evitar duplicatas
+          const messageExists = prev.messages.some(m => 
+            m.id === newMsg.id || 
+            (m.datetime === newMsg.datetime && m.message === newMsg.message && m.sender === newMsg.sender)
+          );
+          
+          if (messageExists) {
+            return prev; // Não atualizar se já existe
+          }
+          
           return {
             ...prev,
             messages: [...prev.messages, newMsg].sort((a, b) => 
@@ -279,7 +322,10 @@ export default function Atendimento() {
   }, [playErrorSound]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Usar requestAnimationFrame para garantir que o DOM foi atualizado
+    requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    });
   };
 
   // Ref para armazenar o contactPhone selecionado (evita loop infinito)
@@ -301,11 +347,13 @@ export default function Atendimento() {
       // Combinar todos os dados
       const allData = [...activeData, ...tabulatedData];
       
-      // Group conversations by contact phone
+      // Group conversations by contact phone (ou groupId para grupos)
       const groupedMap = new Map<string, ConversationGroup>();
       
       allData.forEach((conv) => {
-        const existing = groupedMap.get(conv.contactPhone);
+        // Para grupos, usar groupId como chave; para contatos individuais, usar contactPhone
+        const groupKey = conv.isGroup && conv.groupId ? conv.groupId : conv.contactPhone;
+        const existing = groupedMap.get(groupKey);
         const isTabulated = conv.tabulation !== null && conv.tabulation !== undefined;
         
         if (existing) {
@@ -324,9 +372,14 @@ export default function Atendimento() {
             existing.isTabulated = true;
           }
         } else {
-          groupedMap.set(conv.contactPhone, {
-            contactPhone: conv.contactPhone,
-            contactName: conv.contactName,
+          // Para grupos, usar groupName como contactName; para contatos, usar contactName normal
+          const displayName = conv.isGroup && conv.groupName 
+            ? conv.groupName 
+            : conv.contactName;
+          
+          groupedMap.set(groupKey, {
+            contactPhone: groupKey, // Usar groupKey (groupId ou contactPhone)
+            contactName: displayName,
             lastMessage: conv.message,
             lastMessageTime: conv.datetime,
             isFromContact: conv.sender === 'contact',
@@ -579,8 +632,15 @@ export default function Atendimento() {
   }, [loadConversations, isRealtimeConnected]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [selectedConversation?.messages]);
+    // Scroll apenas quando a conversa selecionada mudar ou quando novas mensagens chegarem
+    // Não fazer scroll em todas as atualizações para evitar scroll indesejado
+    if (selectedConversation?.messages && selectedConversation.messages.length > 0) {
+      const timer = setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedConversation?.contactPhone]); // Mudar dependência para contactPhone ao invés de messages
 
   // Carregar configurações do painel de controle
   useEffect(() => {
@@ -1517,7 +1577,7 @@ export default function Atendimento() {
 
               {/* Messages */}
               <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
+                <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
                   {selectedConversation.messages.map((msg) => (
                     <div
                       key={msg.id}
@@ -1540,7 +1600,20 @@ export default function Atendimento() {
                             ? "bg-card border border-border"
                             : "bg-primary text-primary-foreground"
                         )}
+                        onClick={(e) => e.stopPropagation()}
                       >
+                        {/* Nome do usuário (modo compartilhado) ou participante (grupo) - mais visível */}
+                        {msg.sender === 'operator' && sharedLineMode && msg.userName && (
+                          <p className="text-sm font-bold mb-1.5 text-primary-foreground/95">
+                            {msg.userName}
+                          </p>
+                        )}
+                        {/* Nome do participante em grupos */}
+                        {msg.sender === 'contact' && msg.isGroup && msg.participantName && (
+                          <p className="text-xs font-semibold mb-1 text-muted-foreground">
+                            {msg.participantName}
+                          </p>
+                        )}
                         {/* Renderizar mídia baseado no messageType */}
                         {msg.messageType === 'image' && msg.mediaUrl ? (
                           <div className="mb-2">
@@ -1549,7 +1622,10 @@ export default function Atendimento() {
                               alt="Imagem"
                               className="max-w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                               style={{ maxHeight: '300px' }}
-                              onClick={() => window.open(msg.mediaUrl!.startsWith('http') ? msg.mediaUrl! : `${API_BASE_URL}${msg.mediaUrl}`, '_blank')}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(msg.mediaUrl!.startsWith('http') ? msg.mediaUrl! : `${API_BASE_URL}${msg.mediaUrl}`, '_blank');
+                              }}
                             />
                             {msg.message && !msg.message.includes('recebida') && (
                               <p className="text-sm mt-2">{msg.message}</p>
@@ -1601,11 +1677,6 @@ export default function Atendimento() {
                           )}>
                             {formatTime(msg.datetime)}
                           </p>
-                          {msg.sender === 'operator' && sharedLineMode && msg.userName && (
-                            <span className="text-xs font-medium text-muted-foreground">
-                              • {msg.userName}
-                            </span>
-                          )}
                         </div>
                       </div>
                       {msg.sender === 'operator' && (

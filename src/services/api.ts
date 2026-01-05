@@ -516,6 +516,10 @@ export const campaignsService = {
 
 // ==================== CONVERSATIONS ====================
 export interface Conversation {
+  isGroup?: boolean; // Se true, é mensagem de grupo
+  groupId?: string; // ID do grupo (remoteJid do grupo)
+  groupName?: string; // Nome do grupo
+  participantName?: string; // Nome do participante que enviou a mensagem (para grupos)
   id: number;
   contactName: string;
   contactPhone: string;
