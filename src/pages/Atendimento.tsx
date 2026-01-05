@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
 import { toast } from "@/hooks/use-toast";
-import { conversationsService, tabulationsService, contactsService, templatesService, segmentsService, Contact, Conversation as APIConversation, Tabulation, Template, getAuthToken, API_BASE_URL } from "@/services/api";
+import { conversationsService, tabulationsService, contactsService, templatesService, segmentsService, controlPanelService, Contact, Conversation as APIConversation, Tabulation, Template, getAuthToken, API_BASE_URL } from "@/services/api";
 import { useRealtimeConnection, useRealtimeSubscription } from "@/hooks/useRealtimeConnection";
 import { WS_EVENTS, realtimeSocket } from "@/services/websocket";
 import { format } from "date-fns";
@@ -106,6 +106,7 @@ export default function Atendimento() {
   const [templateVariables, setTemplateVariables] = useState<Record<string, string>>({});
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
   const [segmentAllowsFreeMessage, setSegmentAllowsFreeMessage] = useState<boolean>(true); // Default true para não bloquear
+  const [sharedLineMode, setSharedLineMode] = useState<boolean>(false); // Modo de linha compartilhada
 
   // Subscribe to new messages in real-time
   useRealtimeSubscription(WS_EVENTS.NEW_MESSAGE, (data: any) => {
@@ -580,6 +581,22 @@ export default function Atendimento() {
   useEffect(() => {
     scrollToBottom();
   }, [selectedConversation?.messages]);
+
+  // Carregar configurações do painel de controle
+  useEffect(() => {
+    const loadControlPanelSettings = async () => {
+      try {
+        const settings = await controlPanelService.get(user?.segment || undefined);
+        setSharedLineMode(settings.sharedLineMode || false);
+      } catch (error) {
+        console.error('Error loading control panel settings:', error);
+      }
+    };
+    
+    if (user) {
+      loadControlPanelSettings();
+    }
+  }, [user]);
 
   // Função para determinar o tipo de mídia baseado no mimetype
   const getMessageTypeFromMime = (mimeType: string): 'image' | 'video' | 'audio' | 'document' => {
@@ -1577,16 +1594,29 @@ export default function Atendimento() {
                         ) : (
                           <p className="text-sm">{msg.message}</p>
                         )}
-                        <p className={cn(
-                          "text-xs mt-1",
-                          msg.sender === 'contact' ? "text-muted-foreground" : "text-primary-foreground/70"
-                        )}>
-                          {formatTime(msg.datetime)}
-                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className={cn(
+                            "text-xs",
+                            msg.sender === 'contact' ? "text-muted-foreground" : "text-primary-foreground/70"
+                          )}>
+                            {formatTime(msg.datetime)}
+                          </p>
+                          {msg.sender === 'operator' && sharedLineMode && msg.userName && (
+                            <span className="text-xs font-medium text-muted-foreground">
+                              • {msg.userName}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       {msg.sender === 'operator' && (
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-cyan flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-medium text-primary-foreground">OP</span>
+                          {sharedLineMode && msg.userName ? (
+                            <span className="text-xs font-medium text-primary-foreground" title={msg.userName}>
+                              {msg.userName.charAt(0).toUpperCase()}
+                            </span>
+                          ) : (
+                            <span className="text-xs font-medium text-primary-foreground">OP</span>
+                          )}
                         </div>
                       )}
                     </div>

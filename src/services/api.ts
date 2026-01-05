@@ -1100,6 +1100,7 @@ export interface ControlPanelSettings {
   repescagemCooldownHours: number;
   repescagemMaxAttempts: number;
   activeEvolutions: string[] | null; // Array de nomes de evolution (null = todas ativas)
+  sharedLineMode: boolean; // Modo de linha compartilhada - permite que todos os usuários compartilhem a mesma linha
 }
 
 export const controlPanelService = {

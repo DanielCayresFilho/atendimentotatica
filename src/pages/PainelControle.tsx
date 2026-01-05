@@ -107,6 +107,7 @@ export default function PainelControle() {
         repescagemMaxAttempts: settings.repescagemMaxAttempts,
         blockTabulationId: settings.blockTabulationId,
         activeEvolutions: settings.activeEvolutions,
+        sharedLineMode: settings.sharedLineMode,
       });
 
       toast({
@@ -516,6 +517,52 @@ export default function PainelControle() {
                     </ul>
                   </div>
                 </>
+              )}
+            </div>
+          </GlassCard>
+
+          {/* Modo de Linha Compartilhada */}
+          <GlassCard className="col-span-1">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold">Modo de Linha Compartilhada</h2>
+                <p className="text-sm text-muted-foreground">
+                  Permite que todos os usuários compartilhem a mesma linha
+                </p>
+              </div>
+            </div>
+
+            <Separator className="mb-4" />
+
+            <div className="space-y-4">
+              {/* Ativar/Desativar */}
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <Label className="text-base font-medium">Ativar Modo Compartilhado</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Mesma linha pode ser vinculada a todos os usuários e nunca desvincula
+                  </p>
+                </div>
+                <Switch
+                  checked={settings?.sharedLineMode || false}
+                  onCheckedChange={(checked) => setSettings(s => s ? {...s, sharedLineMode: checked} : null)}
+                />
+              </div>
+
+              {settings?.sharedLineMode && (
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+                  <p className="text-sm font-medium">Como funciona:</p>
+                  <ul className="text-xs text-muted-foreground space-y-1">
+                    <li>• Todos os usuários podem ser vinculados à mesma linha</li>
+                    <li>• Não há limite de operadores por linha</li>
+                    <li>• Linhas nunca são desvinculadas automaticamente</li>
+                    <li>• Mensagens mostram o nome do usuário que enviou</li>
+                    <li>• Todos os usuários veem as mesmas conversas</li>
+                  </ul>
+                </div>
               )}
             </div>
           </GlassCard>
