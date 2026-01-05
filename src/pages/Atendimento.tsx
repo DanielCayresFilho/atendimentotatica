@@ -1628,11 +1628,12 @@ export default function Atendimento() {
                       key={msg.id}
                       className={cn(
                         "flex gap-2",
-                        msg.sender === 'contact' ? "justify-start" :
-                        isMyMessage ? "justify-end" : "justify-start" // Minha mensagem: direita, outros: esquerda
+                        // TODAS as mensagens de operadores vão para direita, apenas contato vai pra esquerda
+                        msg.sender === 'contact' ? "justify-start" : "justify-end"
                       )}
                     >
-                      {(msg.sender === 'contact' || isOtherOperator) && (
+                      {/* Avatar apenas para mensagens do contato */}
+                      {msg.sender === 'contact' && (
                         <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                           <span className="text-xs font-medium">
                             {selectedConversation.contactName.split(' ').map(n => n[0]).join('').slice(0, 2)}
@@ -1643,15 +1644,15 @@ export default function Atendimento() {
                         className={cn(
                           "max-w-[70%] rounded-2xl px-4 py-2",
                           msg.sender === 'contact'
-                            ? "bg-card border border-border"
+                            ? "bg-card border border-border" // Cliente: branco
                             : isMyMessage
-                              ? "bg-primary text-primary-foreground" // Minhas mensagens: azul
-                              : "bg-muted text-foreground" // Mensagens de outros operadores: cinza
+                              ? "bg-red-500 text-white" // Minhas mensagens: VERMELHO
+                              : "bg-muted text-foreground" // Outros operadores: cinza
                         )}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {/* Nome do usuário (modo compartilhado) - mostrar apenas para outros operadores */}
-                        {isOtherOperator && sharedLineMode && msg.userName && (
+                        {/* Nome do operador - mostrar para TODOS os outros operadores (não apenas sharedLineMode) */}
+                        {isOtherOperator && msg.userName && (
                           <p className="text-sm font-bold mb-1.5 text-foreground/90">
                             {msg.userName}
                           </p>
