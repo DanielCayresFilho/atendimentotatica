@@ -524,6 +524,7 @@ export interface Conversation {
   contactName: string;
   contactPhone: string;
   segment: number | null;
+  userId: number | null; // ID do usuário que enviou (para diferenciar operadores no modo compartilhado)
   userName: string | null;
   userLine: number | null;
   message: string;

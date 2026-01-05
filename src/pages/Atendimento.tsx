@@ -1101,7 +1101,7 @@ export default function Atendimento() {
     <MainLayout>
       <div className="h-[calc(100vh-6rem)] flex gap-4">
         {/* Conversations List */}
-        <GlassCard className="w-80 flex flex-col max-h-[calc(100vh-8rem)]" padding="none">
+        <GlassCard className="w-80 flex flex-col" padding="none">
           {/* Header */}
           <div className="p-4 border-b border-border/50">
             <div className="flex items-center justify-between mb-3">
