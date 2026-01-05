@@ -111,55 +111,60 @@ export default function Atendimento() {
   // Subscribe to new messages in real-time
   useRealtimeSubscription(WS_EVENTS.NEW_MESSAGE, (data: any) => {
     console.log('[Atendimento] New message received:', data);
-    
+
     if (data.message) {
       const newMsg = data.message as APIConversation;
-      
+
+      // Definir groupKey baseado se é grupo ou contato individual
+      const groupKey = newMsg.isGroup && newMsg.groupId
+        ? newMsg.groupId
+        : newMsg.contactPhone;
+
       // Play sound for incoming messages
       if (newMsg.sender === 'contact') {
         playMessageSound();
       }
-      
+
       setConversations(prev => {
-        const existing = prev.find(c => c.contactPhone === newMsg.contactPhone);
-        
+        const existing = prev.find(c => c.contactPhone === groupKey);
+
         if (existing) {
           // Verificar se a mensagem já existe para evitar duplicatas
-          const messageExists = existing.messages.some(m => 
-            m.id === newMsg.id || 
+          const messageExists = existing.messages.some(m =>
+            m.id === newMsg.id ||
             (m.datetime === newMsg.datetime && m.message === newMsg.message && m.sender === newMsg.sender)
           );
-          
+
           if (messageExists) {
             return prev; // Não atualizar se já existe
           }
-          
+
           // Add message to existing conversation
           const updated = prev.map(conv => {
             if (conv.contactPhone === groupKey) {
               return {
                 ...conv,
-                messages: [...conv.messages, newMsg].sort((a, b) => 
+                messages: [...conv.messages, newMsg].sort((a, b) =>
                   new Date(a.datetime).getTime() - new Date(b.datetime).getTime()
                 ),
                 lastMessage: newMsg.message,
                 lastMessageTime: newMsg.datetime,
                 isFromContact: newMsg.sender === 'contact',
-                unread: newMsg.sender === 'contact' && selectedPhoneRef.current !== newMsg.contactPhone ? true : conv.unread,
+                unread: newMsg.sender === 'contact' && selectedPhoneRef.current !== groupKey ? true : conv.unread,
               };
             }
             return conv;
           });
-          return updated.sort((a, b) => 
+          return updated.sort((a, b) =>
             new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
           );
         } else {
           // Create new conversation group
           // Para grupos, usar groupName como contactName; para contatos, usar contactName normal
-          const displayName = newMsg.isGroup && newMsg.groupName 
-            ? newMsg.groupName 
+          const displayName = newMsg.isGroup && newMsg.groupName
+            ? newMsg.groupName
             : newMsg.contactName;
-          
+
           const newGroup: ConversationGroup = {
             contactPhone: groupKey, // Usar groupKey (groupId ou contactPhone)
             contactName: displayName,
@@ -174,22 +179,22 @@ export default function Atendimento() {
       });
 
       // Update selected conversation if it's the same contact (usando ref)
-      if (selectedPhoneRef.current === newMsg.contactPhone) {
+      if (selectedPhoneRef.current === groupKey) {
         setSelectedConversation(prev => {
           if (!prev) return null;
           // Verificar se a mensagem já existe para evitar duplicatas
-          const messageExists = prev.messages.some(m => 
-            m.id === newMsg.id || 
+          const messageExists = prev.messages.some(m =>
+            m.id === newMsg.id ||
             (m.datetime === newMsg.datetime && m.message === newMsg.message && m.sender === newMsg.sender)
           );
-          
+
           if (messageExists) {
             return prev; // Não atualizar se já existe
           }
-          
+
           return {
             ...prev,
-            messages: [...prev.messages, newMsg].sort((a, b) => 
+            messages: [...prev.messages, newMsg].sort((a, b) =>
               new Date(a.datetime).getTime() - new Date(b.datetime).getTime()
             ),
             lastMessage: newMsg.message,
@@ -197,7 +202,7 @@ export default function Atendimento() {
             isFromContact: newMsg.sender === 'contact',
           };
         });
-        
+
         // Scroll suave apenas se for mensagem do contato (não do operador)
         if (newMsg.sender === 'contact') {
           setTimeout(() => {
@@ -324,7 +329,11 @@ export default function Atendimento() {
   const scrollToBottom = () => {
     // Usar requestAnimationFrame para garantir que o DOM foi atualizado
     requestAnimationFrame(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",    // Evita scroll da página inteira
+        inline: "nearest"    // Evita scroll horizontal
+      });
     });
   };
 
