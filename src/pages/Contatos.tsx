@@ -263,21 +263,21 @@ export default function Contatos() {
     <MainLayout>
       <div className="h-full overflow-y-auto scrollbar-content">
         <div className="animate-fade-in">
-        <CrudTable
-          title="Contatos"
-          subtitle="Gerenciar contatos do sistema"
-          columns={columns}
-          data={contacts}
-          searchPlaceholder="Buscar contatos..."
-          onAdd={handleAdd}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          renderForm={renderForm}
-          isFormOpen={isFormOpen}
-          onFormOpenChange={setIsFormOpen}
-          editingItem={editingContact}
-        />
-      </div>
+          <CrudTable
+            title="Contatos"
+            subtitle="Gerenciar contatos do sistema"
+            columns={columns}
+            data={contacts}
+            searchPlaceholder="Buscar contatos..."
+            onAdd={handleAdd}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            renderForm={renderForm}
+            isFormOpen={isFormOpen}
+            onFormOpenChange={setIsFormOpen}
+            editingItem={editingContact}
+          />
+        </div>
       </div>
     </MainLayout>
   );

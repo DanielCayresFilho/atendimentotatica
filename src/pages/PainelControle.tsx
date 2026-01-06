@@ -171,17 +171,18 @@ export default function PainelControle() {
     return (
       <MainLayout>
         <div className="h-full overflow-y-auto scrollbar-content">
-        <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         </div>
-      </div>
-      </MainLayout>
+    </MainLayout>
     );
   }
 
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <div className="h-full overflow-y-auto scrollbar-content">
+        <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

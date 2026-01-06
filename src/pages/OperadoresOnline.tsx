@@ -353,7 +353,6 @@ export default function OperadoresOnline() {
         </DialogContent>
       </Dialog>
       </div>
-      </div>
     </MainLayout>
   );
 }

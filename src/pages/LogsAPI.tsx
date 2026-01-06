@@ -633,7 +633,6 @@ export default function LogsAPI() {
         </DialogContent>
       </Dialog>
       </div>
-      </div>
     </MainLayout>
   );
 }

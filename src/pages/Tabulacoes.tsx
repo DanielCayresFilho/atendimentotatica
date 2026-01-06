@@ -181,11 +181,11 @@ export default function Tabulacoes() {
     return (
       <MainLayout>
         <div className="h-full overflow-y-auto scrollbar-content">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         </div>
-      </div>
-      </MainLayout>
+    </MainLayout>
     );
   }
 

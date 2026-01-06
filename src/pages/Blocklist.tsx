@@ -204,11 +204,11 @@ export default function Blocklist() {
     return (
       <MainLayout>
         <div className="h-full overflow-y-auto scrollbar-content">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         </div>
-      </div>
-      </MainLayout>
+    </MainLayout>
     );
   }
 
@@ -217,19 +217,19 @@ export default function Blocklist() {
       <div className="h-full overflow-y-auto scrollbar-content">
         <div className="animate-fade-in">
           <CrudTable
-          title="Blocklist"
-          subtitle="Contatos bloqueados que não receberão mensagens"
-          columns={columns}
-          data={items}
-          searchPlaceholder="Buscar na blocklist..."
-          onAdd={handleAdd}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          renderForm={renderForm}
-          isFormOpen={isFormOpen}
-          onFormOpenChange={setIsFormOpen}
-          editingItem={editingItem}
-        />
+            title="Blocklist"
+            subtitle="Contatos bloqueados que não receberão mensagens"
+            columns={columns}
+            data={items}
+            searchPlaceholder="Buscar na blocklist..."
+            onAdd={handleAdd}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            renderForm={renderForm}
+            isFormOpen={isFormOpen}
+            onFormOpenChange={setIsFormOpen}
+            editingItem={editingItem}
+          />
         </div>
       </div>
     </MainLayout>

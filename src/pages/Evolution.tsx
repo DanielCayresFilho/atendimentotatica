@@ -257,32 +257,33 @@ export default function Evolution() {
     return (
       <MainLayout>
         <div className="h-full overflow-y-auto scrollbar-content">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         </div>
-      </div>
-      </MainLayout>
+    </MainLayout>
     );
   }
 
   return (
     <MainLayout>
-      <div className="animate-fade-in">
-        <CrudTable
-          title="Evolution API"
-          subtitle="Gerenciar instâncias da Evolution API"
-          columns={columns}
-          data={instances}
-          searchPlaceholder="Buscar instâncias..."
-          onAdd={handleAdd}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          renderForm={renderForm}
-          isFormOpen={isFormOpen}
-          onFormOpenChange={setIsFormOpen}
-          editingItem={editingInstance}
-        />
-      </div>
+      <div className="h-full overflow-y-auto scrollbar-content">
+        <div className="animate-fade-in">
+          <CrudTable
+            title="Evolution API"
+            subtitle="Gerenciar instâncias da Evolution API"
+            columns={columns}
+            data={instances}
+            searchPlaceholder="Buscar instâncias..."
+            onAdd={handleAdd}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            renderForm={renderForm}
+            isFormOpen={isFormOpen}
+            onFormOpenChange={setIsFormOpen}
+            editingItem={editingInstance}
+          />
+        </div>
       </div>
     </MainLayout>
   );

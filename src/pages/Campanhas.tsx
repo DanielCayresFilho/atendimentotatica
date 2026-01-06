@@ -464,7 +464,6 @@ export default function Campanhas() {
         </DialogContent>
       </Dialog>
       </div>
-      </div>
     </MainLayout>
   );
 }
