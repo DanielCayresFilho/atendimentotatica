@@ -624,7 +624,6 @@ export default function Usuarios() {
         />
         </div>
       </div>
-      </div>
     </MainLayout>
   );
 }

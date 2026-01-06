@@ -191,22 +191,23 @@ export default function Tabulacoes() {
 
   return (
     <MainLayout>
-      <div className="animate-fade-in">
-        <CrudTable
-          title="Tabulações"
-          subtitle="Gerenciar tipos de finalização de atendimento"
-          columns={columns}
-          data={tabulations}
-          searchPlaceholder="Buscar tabulações..."
-          onAdd={handleAdd}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          renderForm={renderForm}
-          isFormOpen={isFormOpen}
-          onFormOpenChange={setIsFormOpen}
-          editingItem={editingTabulation}
-        />
-      </div>
+      <div className="h-full overflow-y-auto scrollbar-content">
+        <div className="animate-fade-in">
+          <CrudTable
+            title="Tabulações"
+            subtitle="Gerenciar tipos de finalização de atendimento"
+            columns={columns}
+            data={tabulations}
+            searchPlaceholder="Buscar tabulações..."
+            onAdd={handleAdd}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            renderForm={renderForm}
+            isFormOpen={isFormOpen}
+            onFormOpenChange={setIsFormOpen}
+            editingItem={editingTabulation}
+          />
+        </div>
       </div>
     </MainLayout>
   );

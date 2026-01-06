@@ -504,7 +504,6 @@ export default function Linhas() {
         </div>
       </div>
       </div>
-      </div>
     </MainLayout>
     );
   }

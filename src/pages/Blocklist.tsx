@@ -214,8 +214,9 @@ export default function Blocklist() {
 
   return (
     <MainLayout>
-      <div className="animate-fade-in">
-        <CrudTable
+      <div className="h-full overflow-y-auto scrollbar-content">
+        <div className="animate-fade-in">
+          <CrudTable
           title="Blocklist"
           subtitle="Contatos bloqueados que não receberão mensagens"
           columns={columns}
@@ -229,7 +230,7 @@ export default function Blocklist() {
           onFormOpenChange={setIsFormOpen}
           editingItem={editingItem}
         />
-      </div>
+        </div>
       </div>
     </MainLayout>
   );

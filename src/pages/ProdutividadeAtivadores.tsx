@@ -334,7 +334,6 @@ export default function ProdutividadeAtivadores() {
           </Card>
         </div>
       </div>
-      </div>
     </MainLayout>
   );
 }
