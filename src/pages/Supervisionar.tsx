@@ -6,10 +6,14 @@ import {
   AlertTriangle,
   Loader2,
   FileText,
+  Download,
+  Search,
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -45,6 +49,7 @@ export default function Supervisionar() {
   const [selectedConversation, setSelectedConversation] =
     useState<ConversationGroup | null>(null);
   const [selectedOperator, setSelectedOperator] = useState("all");
+  const [operatorSearch, setOperatorSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   const { user } = useAuth();
@@ -54,6 +59,12 @@ export default function Supervisionar() {
       const params: any = { role: "operator" };
       if (user?.role === "supervisor" && user.segmentId) {
         params.segment = user.segmentId;
+      } // Para supervisor e digital, filtrar por domínio de email
+      if (user?.role === "supervisor" || user?.role === "digital") {
+        const emailDomain = user.email.split("@")[1];
+        if (emailDomain) {
+          params.emailDomain = `@${emailDomain}`;
+        }
       }
       const data = await usersService.list(params);
       setOperators(data);
@@ -154,6 +165,15 @@ export default function Supervisionar() {
     loadConversations();
   }, [loadOperators, loadConversations]);
 
+  // Set initial selectedOperator based on user role
+  useEffect(() => {
+    if (user?.role === "supervisor" && operators.length > 0) {
+      setSelectedOperator(operators[0].id.toString());
+    } else if (user?.role === "digital") {
+      setSelectedOperator("all");
+    }
+  }, [user, operators]);
+
   // Poll for new messages - intervalo maior para não sobrecarregar
   useEffect(() => {
     const interval = setInterval(() => {
@@ -173,6 +193,10 @@ export default function Supervisionar() {
           return operator && c.operatorName === operator.name;
         });
 
+  const filteredOperators = operators.filter((op) =>
+    op.name.toLowerCase().includes(operatorSearch.toLowerCase())
+  );
+
   const formatTime = (datetime: string) => {
     try {
       return format(new Date(datetime), "HH:mm");
@@ -189,16 +213,33 @@ export default function Supervisionar() {
           {/* Header */}
           <div className="p-4 border-b border-border/50 space-y-3">
             <h2 className="font-semibold text-foreground">Supervisionar</h2>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Buscar operador..."
+                value={operatorSearch}
+                onChange={(e) => setOperatorSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
             <Select
               value={selectedOperator}
               onValueChange={setSelectedOperator}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Todos os Operadores" />
+                <SelectValue
+                  placeholder={
+                    user?.role === "supervisor"
+                      ? "Selecione um Operador"
+                      : "Todos os Operadores"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os Operadores</SelectItem>
-                {operators.map((op) => (
+                {user?.role !== "supervisor" && (
+                  <SelectItem value="all">Todos os Operadores</SelectItem>
+                )}
+                {filteredOperators.map((op) => (
                   <SelectItem key={op.id} value={op.id.toString()}>
                     {op.name}
                   </SelectItem>
@@ -297,11 +338,69 @@ export default function Supervisionar() {
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Atendente</p>
-                  <p className="text-sm font-medium text-warning">
-                    {selectedConversation.operatorName}
-                  </p>
+                <div className="flex items-center gap-2">
+                  {(user?.role === "admin" || user?.role === "digital") && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          // Fazer download do PDF via API
+                          const response = await fetch(
+                            `${API_BASE_URL}/conversations/download-pdf/${selectedConversation.contactPhone}`,
+                            {
+                              method: "GET",
+                              headers: {
+                                Authorization: `Bearer ${localStorage.getItem(
+                                  "token"
+                                )}`,
+                              },
+                            }
+                          );
+
+                          if (!response.ok) {
+                            throw new Error("Erro ao baixar PDF");
+                          }
+
+                          // Criar blob do PDF e download
+                          const blob = await response.blob();
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `conversa-${
+                            selectedConversation.contactPhone
+                          }-${format(new Date(), "yyyy-MM-dd")}.pdf`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+
+                          toast({
+                            title: "Download iniciado",
+                            description: "Conversa baixada com sucesso",
+                          });
+                        } catch (error) {
+                          toast({
+                            title: "Erro ao baixar",
+                            description:
+                              error instanceof Error
+                                ? error.message
+                                : "Erro ao baixar conversa",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Baixar PDF
+                    </Button>
+                  )}
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">Atendente</p>
+                    <p className="text-sm font-medium text-warning">
+                      {selectedConversation.operatorName}
+                    </p>
+                  </div>
                 </div>
               </div>
 
