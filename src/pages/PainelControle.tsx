@@ -573,6 +573,7 @@ export default function PainelControle() {
           {/* Evolutions Ativas - Oculto (funcionalidade mantida no backend) */}
         </div>
       </div>
+      </div>
     </MainLayout>
   );
 }

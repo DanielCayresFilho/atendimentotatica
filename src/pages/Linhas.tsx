@@ -612,7 +612,6 @@ export default function Linhas() {
         </DialogContent>
       </Dialog>
       </div>
-    </div>
     </MainLayout>
   );
 }
