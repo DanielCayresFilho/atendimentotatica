@@ -170,9 +170,11 @@ export default function PainelControle() {
   if (isLoading) {
     return (
       <MainLayout>
+        <div className="h-full overflow-y-auto scrollbar-content">
         <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
+      </div>
       </MainLayout>
     );
   }
@@ -569,6 +571,7 @@ export default function PainelControle() {
 
           {/* Evolutions Ativas - Oculto (funcionalidade mantida no backend) */}
         </div>
+      </div>
       </div>
     </MainLayout>
   );

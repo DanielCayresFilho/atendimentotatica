@@ -246,7 +246,8 @@ export default function Segmentos() {
 
   return (
     <MainLayout>
-      <div className="animate-fade-in">
+      <div className="h-full overflow-y-auto scrollbar-content">
+        <div className="animate-fade-in">
         <div className="mb-4 flex justify-end gap-2">
           <input
             ref={fileInputRef}
@@ -288,6 +289,7 @@ export default function Segmentos() {
           onFormOpenChange={setIsFormOpen}
           editingItem={editingSegment}
         />
+      </div>
       </div>
     </MainLayout>
   );

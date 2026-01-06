@@ -498,10 +498,14 @@ export default function Linhas() {
   if (isLoading) {
     return (
       <MainLayout>
+        <div className="h-full overflow-y-auto scrollbar-content">
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      </MainLayout>
+      </div>
+      </div>
+      </div>
+    </MainLayout>
     );
   }
 
@@ -608,6 +612,8 @@ export default function Linhas() {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
+      </div>
     </MainLayout>
   );
 }

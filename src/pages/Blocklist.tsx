@@ -203,9 +203,11 @@ export default function Blocklist() {
   if (isLoading) {
     return (
       <MainLayout>
+        <div className="h-full overflow-y-auto scrollbar-content">
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
+      </div>
       </MainLayout>
     );
   }
@@ -227,6 +229,7 @@ export default function Blocklist() {
           onFormOpenChange={setIsFormOpen}
           editingItem={editingItem}
         />
+      </div>
       </div>
     </MainLayout>
   );
